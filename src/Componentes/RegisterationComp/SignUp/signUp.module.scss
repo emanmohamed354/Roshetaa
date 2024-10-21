@@ -1,0 +1,119 @@
+.bg {
+    background:rgba(0, 0, 0, 0.4) url('../../../images/medical.jpg');
+    background-size: cover; 
+    background-blend-mode:hue;
+    background-position: center; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh;
+    z-index: -1; 
+  }
+  
+  .container {
+    margin-top: 200px;
+    position: relative; // Allows positioning of the form relative to this container
+    left: 50%; // Centers horizontally
+    transform: translate(-50%, -20%); // Adjusts to truly center the element
+    width: 90%; // Sets the width to 90% of the container
+    max-width: 1000px; // Limits the maximum width of the form (increase for a larger form)
+    z-index: 1; // Ensures the form is on top of the background image
+    display:flex;
+   
+    flex-direction: column;
+  }
+  
+  .form {
+    height: 70%;
+    width:80%;
+    margin-left: auto;
+    margin-right: auto;
+    background: rgb(247, 247, 231); // Adds a semi-transparent white background
+    padding: 40px; // Adds padding inside the form (increase for more space)
+    border-radius: 0px; // Rounds the corners of the form
+    box-shadow: 0px 0px 10px 5px rgba(72, 71, 71, 0.5); // Adds a shadow for depth
+  
+    // Style input fields
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="password"],
+   
+    select {
+      border: none; // Remove border
+      border-bottom: 2px solid #ccc; // Only bottom border (line style)
+      background: transparent; // Transparent background
+      padding: 10px 2; // Top and bottom padding for spacing
+      width: 100%; // Full width of the container
+      margin-bottom: 15px; // Space between inputs
+      font-size: 16px; // Font size
+      transition: border-color 0.3s; // Smooth transition for border color
+  
+      &:focus {
+        border-color: rgb(252, 252, 253); // Change border color on focus
+        outline: none; // Remove default outline
+      }
+    }
+  
+    // Style select dropdown
+    select {
+      border: none; // Remove border
+      border-bottom: 2px solid #ccc; // Only bottom border (line style)
+      background: transparent; // Transparent background
+      padding: 10px 2; // Top and bottom padding for spacing
+      width: 100%; // Full width of the container
+      margin-bottom: 15px; // Space between inputs
+      font-size: 16px; // Font size
+      transition: border-color 0.3s; // Smooth transition for border color
+  
+      &:focus {
+        border-color: rgb(239, 239, 243); // Change border color on focus
+        outline: none; // Remove default outline
+      }
+    }
+
+    .password-container {
+      position: relative; // Allows positioning of the icon
+      margin-bottom: 15px; // Space below the input
+  
+      input[type="password"],
+      input[type="text"] {
+        padding-right: 40px; // Add space for the eye icon
+        border: none; // No border
+        border-bottom: 2px solid #ccc; // Bottom border only
+        background: transparent; // Transparent background
+        margin-bottom: 0; // No bottom margin to align with other fields
+      }
+    }
+  }
+  
+  .gradient-button {
+    background: linear-gradient(to right,#00f, #90ee90); 
+    color: white; /* Text color */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Padding for the button */
+    font-size: 20px; /* Font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: all 0.8s; 
+    width: 90%;
+    height: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    border-radius: 17px;  
+  
+  }
+  .gradient-button:hover{
+    background-color:red ;
+  }
+
+  h1{
+    text-align: center;
+    font-size: 30px;
+    margin-top: 0px;
+    margin-bottom: 10%;
+  }
+  

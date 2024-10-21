@@ -1,0 +1,1 @@
+export const BaseUrl="https://rosheta.vercel.app"
