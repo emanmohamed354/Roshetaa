@@ -17,7 +17,7 @@ const app = express()
 
 // CORS configuration - MUST be before any routes
 app.use(cors({
-    origin: true, // This allows all origins temporarily
+    origin: ['http://localhost:3000', 'https://rosheta-web-git-main-eman-mohammeds-projects-b6f9bb20.vercel.app'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token']
