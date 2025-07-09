@@ -58,10 +58,10 @@ const connectDatabase = async () => {
 // Call it immediately
 connectDatabase();
 
-// Add a middleware to check database connection
+// Update the database check middleware
 app.use((req, res, next) => {
-    // Allow test endpoint and root to work without DB
-    if (req.path === '/' || req.path === '/test') {
+    // Allow test endpoints to work without DB
+    if (req.path === '/' || req.path === '/test' || req.path === '/test-db' || req.path === '/env-check') {
         return next();
     }
     
@@ -73,6 +73,16 @@ app.use((req, res, next) => {
     }
     
     next();
+});
+app.get('/env-check', (req, res) => {
+    const mongoUri = process.env.MONGODB_URI;
+    res.json({
+        hasMongoUri: !!mongoUri,
+        mongoUriLength: mongoUri ? mongoUri.length : 0,
+        uriPreview: mongoUri ? mongoUri.substring(0, 30) + '...' : 'NOT SET',
+        nodeEnv: process.env.NODE_ENV,
+        allEnvKeys: Object.keys(process.env).filter(key => !key.includes('SECRET') && !key.includes('KEY'))
+    });
 });
 
 app.get('/test', async (req, res) => {
@@ -95,30 +105,42 @@ app.get('/test', async (req, res) => {
     });
 });
 app.get('/test-db', async (req, res) => {
-    try {
-        const mongoose = await import('mongoose');
-        
-        // Try a direct connection
-        const testConnection = await mongoose.createConnection(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000,
+    const mongoose = require('mongoose');
+    const mongoUri = process.env.MONGODB_URI;
+    
+    if (!mongoUri) {
+        return res.status(500).json({
+            success: false,
+            error: 'MONGODB_URI not found in environment variables',
+            env: process.env.NODE_ENV
         });
+    }
+    
+    try {
+        // Set a short timeout for testing
+        mongoose.set('bufferTimeoutMS', 5000);
         
-        // Test the connection
-        await testConnection.db.admin().ping();
+        console.log('Attempting connection to MongoDB...');
+        await mongoose.connect(mongoUri, {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 5000,
+        });
         
         res.json({
             success: true,
-            message: 'Direct database connection successful',
-            databases: await testConnection.db.admin().listDatabases()
+            message: 'Database connection successful!',
+            state: mongoose.connection.readyState
         });
         
-        // Close test connection
-        await testConnection.close();
+        // Disconnect after test
+        await mongoose.disconnect();
     } catch (error) {
+        console.error('Database test error:', error);
         res.status(500).json({
             success: false,
             error: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            code: error.code,
+            name: error.name
         });
     }
 });
