@@ -144,6 +144,95 @@ app.get('/test-db', async (req, res) => {
         });
     }
 });
+app.get('/test-db-simple', async (req, res) => {
+    // Set immediate timeout for response
+    const timeout = setTimeout(() => {
+        if (!res.headersSent) {
+            res.status(504).json({
+                error: 'Connection attempt timed out after 8 seconds',
+                hint: 'Check MongoDB Atlas Network Access settings'
+            });
+        }
+    }, 8000);
+
+    try {
+        const { MongoClient } = await import('mongodb');
+        const uri = process.env.MONGODB_URI;
+        
+        // Parse the connection string to check components
+        const match = uri.match(/mongodb\+srv:\/\/([^:]+):([^@]+)@([^\/]+)\/(.+)/);
+        if (!match) {
+            clearTimeout(timeout);
+            return res.status(400).json({ error: 'Invalid MongoDB URI format' });
+        }
+
+        const [, username, password, cluster, database] = match;
+        
+        console.log('Connection details:', {
+            username,
+            cluster,
+            database,
+            hasPassword: !!password
+        });
+
+        // Try a simple connection with MongoClient
+        const client = new MongoClient(uri, {
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000,
+            socketTimeoutMS: 5000,
+        });
+
+        console.log('Attempting to connect...');
+        await client.connect();
+        console.log('Connected successfully!');
+        
+        // Try to ping
+        await client.db().admin().ping();
+        
+        clearTimeout(timeout);
+        res.json({
+            success: true,
+            message: 'Connection successful!',
+            cluster: cluster,
+            database: database
+        });
+
+        await client.close();
+    } catch (error) {
+        clearTimeout(timeout);
+        console.error('Connection error:', error);
+        
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            code: error.code,
+            errorName: error.name,
+            hint: error.message.includes('authentication') ? 
+                'Check username/password' : 
+                'Check MongoDB Atlas Network Access (IP Whitelist)'
+        });
+    }
+});
+app.get('/test-encoded-password', (req, res) => {
+    const uri = process.env.MONGODB_URI;
+    const match = uri.match(/mongodb\+srv:\/\/([^:]+):([^@]+)@/);
+    
+    if (match) {
+        const [, username, password] = match;
+        const encodedPassword = encodeURIComponent(password);
+        
+        res.json({
+            currentPassword: password,
+            needsEncoding: password !== encodedPassword,
+            encodedPassword: encodedPassword,
+            suggestedUri: password !== encodedPassword ? 
+                `mongodb+srv://${username}:${encodedPassword}@cluster0.mnfstos.mongodb.net/Pharmacy?retryWrites=true&w=majority` :
+                'Password encoding looks correct'
+        });
+    } else {
+        res.json({ error: 'Could not parse URI' });
+    }
+});
 // Logging middleware
 app.use((req, res, next) => {
     console.log(`Request Method: ${req.method}, Request URL: ${req.url}`);
