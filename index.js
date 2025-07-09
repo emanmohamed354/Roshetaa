@@ -75,15 +75,53 @@ app.use((req, res, next) => {
     next();
 });
 
-// Add a test endpoint
-app.get('/test', (req, res) => {
+app.get('/test', async (req, res) => {
+    // Try to connect if not connected
+    if (!dbConnected) {
+        try {
+            await connectDatabase();
+        } catch (error) {
+            console.error('Test endpoint DB connection attempt failed:', error);
+        }
+    }
+    
     res.json({ 
         message: 'Server is running',
         dbConnected: dbConnected,
+        mongooseState: mongoose.connection.readyState, // 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
+        hasMongoUri: !!process.env.MONGODB_URI,
+        nodeEnv: process.env.NODE_ENV,
         timestamp: new Date().toISOString()
     });
 });
-
+app.get('/test-db', async (req, res) => {
+    try {
+        const mongoose = await import('mongoose');
+        
+        // Try a direct connection
+        const testConnection = await mongoose.createConnection(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000,
+        });
+        
+        // Test the connection
+        await testConnection.db.admin().ping();
+        
+        res.json({
+            success: true,
+            message: 'Direct database connection successful',
+            databases: await testConnection.db.admin().listDatabases()
+        });
+        
+        // Close test connection
+        await testConnection.close();
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+});
 // Logging middleware
 app.use((req, res, next) => {
     console.log(`Request Method: ${req.method}, Request URL: ${req.url}`);
