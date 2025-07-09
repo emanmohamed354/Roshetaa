@@ -41,8 +41,48 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection
-DbConnection()
+// At the top of your file, modify the database connection call
+let dbConnected = false;
+
+// Connect to database with error handling
+const connectDatabase = async () => {
+    try {
+        await DbConnection();
+        dbConnected = true;
+    } catch (error) {
+        console.error('Failed to connect to database:', error);
+        dbConnected = false;
+    }
+};
+
+// Call it immediately
+connectDatabase();
+
+// Add a middleware to check database connection
+app.use((req, res, next) => {
+    // Allow test endpoint and root to work without DB
+    if (req.path === '/' || req.path === '/test') {
+        return next();
+    }
+    
+    if (!dbConnected) {
+        return res.status(503).json({ 
+            error: 'Service temporarily unavailable',
+            message: 'Database connection not established'
+        });
+    }
+    
+    next();
+});
+
+// Add a test endpoint
+app.get('/test', (req, res) => {
+    res.json({ 
+        message: 'Server is running',
+        dbConnected: dbConnected,
+        timestamp: new Date().toISOString()
+    });
+});
 
 // Logging middleware
 app.use((req, res, next) => {

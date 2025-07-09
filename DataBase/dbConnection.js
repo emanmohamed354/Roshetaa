@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-let isConnected = false; // Track connection status
+let isConnected = false;
 
 export const DbConnection = async () => {
     if (isConnected) {
@@ -9,15 +9,41 @@ export const DbConnection = async () => {
     }
 
     const mongoUri = process.env.MONGODB_URI;
-    console.log('Connecting to MongoDB with URI:');
+    
+    if (!mongoUri) {
+        console.error('MONGODB_URI is not defined in environment variables');
+        throw new Error('Database configuration error');
+    }
+
+    console.log('Attempting to connect to MongoDB...');
 
     try {
-        await mongoose.connect(mongoUri, {
-            serverSelectionTimeoutMS: 50000, // Timeout after 50s
-        });
+        const opts = {
+            serverSelectionTimeoutMS: 10000, // 10 seconds
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10,
+            minPoolSize: 5,
+        };
+
+        await mongoose.connect(mongoUri, opts);
+        
         isConnected = true;
         console.log('Database Connected Successfully');
+        
+        // Add connection event handlers
+        mongoose.connection.on('error', err => {
+            console.error('MongoDB connection error:', err);
+            isConnected = false;
+        });
+
+        mongoose.connection.on('disconnected', () => {
+            console.log('MongoDB disconnected');
+            isConnected = false;
+        });
+
     } catch (error) {
-        console.error('Error connecting to the database:', error.message);
+        console.error('Error connecting to the database:', error);
+        isConnected = false;
+        throw error; // Re-throw to handle in the main app
     }
 };
