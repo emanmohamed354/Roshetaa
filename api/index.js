@@ -10,6 +10,7 @@ import cors from 'cors';
 import paymentRouter from '../src/modules/payment/payment.router.js';
 import { PaymobWebhookRouter } from '../src/modules/paymobWebhook/paymobWebhook.router.js'
 import altRouter from '../src/modules/alt/alt.router.js';
+import app from '../index.js';
 
 dotenv.config();
 const app = express()
