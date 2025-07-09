@@ -14,9 +14,24 @@ import altRouter from './src/modules/alt/alt.router.js';
 dotenv.config();
 const app = express()
 
-// CORS configuration - MUST be before any routes
+// Enable CORS for all routes
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, token');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
+// Also use cors middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://rosheta-web-git-main-eman-mohammeds-projects-b6f9bb20.vercel.app'],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token']
@@ -58,10 +73,5 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Export for Vercel
 export default app;
-
-// For local development
-if (process.env.NODE_ENV !== 'production') {
-    const port = process.env.PORT || 3000;
-    app.listen(port, () => console.log(`App listening on port ${port}!`));
-}
