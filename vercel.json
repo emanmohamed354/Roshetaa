@@ -1,27 +1,6 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "./index.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 10
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, token",
-        "Access-Control-Allow-Credentials": "true"
-      }
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "version":2,
+  "builds":[{"src":"./index.js","use":"@vercel/node"}],
+  "routes":[{"src":"/(.*)","dest":"/"}]
+
 }
